@@ -1,0 +1,19 @@
+name: Package Nuget
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x
+      - name: Restore
+        run: dotnet restore Bank/Bank.sln
+      - name: Test
+        run: dotnet test Bank/Bank.sln --collect:"XPlat Code Coverage"
+      - name: Pack
+        run: dotnet pack Bank/Bank.WebApi/Bank.WebApi.csproj --configuration Release -o nupkgs
+      - name: Publish Nuget
+        run: dotnet nuget push nupkgs/*.nupkg --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,22 @@
+name: Semgrep Analysis
+on: push
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up library
+        run: |
+            python -m pip install semgrep
+            python -m pip install prospector2html
+      - name: Semgrep scan
+        run: semgrep scan --config="p/default" --json --output semgrep.json || true
+      - name: Generate HTML Report
+        run: prospector-html --input semgrep.json --output semgrep-report.html --filter semgrep
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          keep_files: true
+          publish_branch: gh-pages
